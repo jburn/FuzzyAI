@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+from re import sub
 from typing import Any, Final, Optional, Type
 
 from pydantic import BaseModel, Field
@@ -105,7 +106,9 @@ class GPTFuzzerAttackHandler(BaseAttackTechniqueHandler[GPTFuzzerAttackHandlerEx
 
         logger.info("Finished running the action")
         async with self._borrow(self._model) as llm:
-            changed_prompt = variation_response.response.format(INSERT_PROMPT_HERE=prompt) #type:ignore
+            changed_prompt = sub(r'(?<!{INSERT_PROMPT_HERE)([{}])(?!INSERT_PROMPT_HERE})', # Escape the extra curly braces to avoid consistent KeyError
+                                 r'\\\1',
+                                 variation_response.response).format(INSERT_PROMPT_HERE=prompt) #type:ignore
             response = await llm.generate(changed_prompt, **self._extra)
             result = AttackResultEntry(original_prompt=prompt,
                                        current_prompt=changed_prompt,

@@ -5,7 +5,7 @@ from fuzzy.handlers.mutators.base import BaseMutator, mutators_fm
 from fuzzy.handlers.mutators.enums import MutatorType
 from fuzzy.llm.providers.base import BaseLLMProvider
 
-PROMPT_TEMPLATE = "Rephrase the following sentence: {question}"
+PROMPT_TEMPLATE = "Rephrase the following text: {question}"
 
 logger = logging.getLogger(__name__)
 

@@ -195,6 +195,7 @@ REPORT_TEMPLATE = '''
                     <tr>
                         <th>Original Prompt</th>
                         <th>Adversarial Prompt</th>
+                        <th>Response</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -227,6 +228,7 @@ REPORT_TEMPLATE = '''
                     <tr>
                         <th>Original Prompt</th>
                         <th>Failed Prompt</th>
+                        <th>Response</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -302,7 +304,7 @@ REPORT_TEMPLATE = '''
             `<th>${{model}}</th>`
         ).join('');
         table.appendChild(headerRow);
-        
+
         reportData.heatmap.attacks.forEach((attack, i) => {{
             const row = document.createElement('tr');
             row.innerHTML = `<td>${{attack}}</td>` + 
@@ -356,9 +358,15 @@ REPORT_TEMPLATE = '''
             const harmfulCell = document.createElement('td');
             harmfulCell.textContent = prompt.harmful;
             harmfulCell.appendChild(createCopyIcon(prompt.harmful));
+
+            // Response prompt cell
+            const responseCell = document.createElement('td');
+            responseCell.textContent = prompt.response;
+            responseCell.appendChild(createCopyIcon(prompt.response));
             
             row.appendChild(originalCell);
             row.appendChild(harmfulCell);
+            row.appendChild(responseCell);
             harmfulPromptsBody.appendChild(row);
         }});
 
@@ -378,9 +386,17 @@ REPORT_TEMPLATE = '''
             if (prompt.harmful) {{
                 failedCell.appendChild(createCopyIcon(prompt.harmful));
             }}
+
+            // Response cell
+            const responseCell = document.createElement('td');
+            responseCell.textContent = prompt.response || '-';
+            if (prompt.response) {{
+                responseCell.appendChild(createCopyIcon(prompt.response));
+            }}
             
             row.appendChild(originalCell);
             row.appendChild(failedCell);
+            row.appendChild(responseCell);
             failedPromptsBody.appendChild(row);
         }});
     </script>
@@ -404,7 +420,7 @@ def generate_report(report: FuzzerResult) -> None:
         heatmap_data = []
         models = []
         attacks = []
-        
+
         for entry in report.attacking_techniques or []:
             attacks.append(entry.attack_mode)
             row_data = []
@@ -428,14 +444,18 @@ def generate_report(report: FuzzerResult) -> None:
                 for prompt in model_entry.harmful_prompts:
                     harmful_prompts.append({
                         "original": prompt.original_prompt,
-                        "harmful": prompt.harmful_prompt
+                        "harmful": prompt.harmful_prompt,
+                        "response": prompt.harmful_response
                     })
                 for prompt in model_entry.failed_prompts:
                     failed_prompts.append({
                         "original": prompt.original_prompt,
-                        "harmful": prompt.harmful_prompt
+                        "harmful": prompt.harmful_prompt,
+                        "response": prompt.harmful_response
                     })
-            
+
+            if len(row_data) > 1:
+                row_data = [sum(row_data) / len(row_data)]
             heatmap_data.append(row_data)
 
         # Convert to format needed for Chart.js

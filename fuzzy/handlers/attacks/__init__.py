@@ -18,3 +18,4 @@ from .shuffle_inconsistency.handler import ShuffleInconsistencyAttackHandler
 from .taxonomy.handler import TaxonomyParaphraser
 from .thought_experiment.handler import ThoughtExperimentAttackHandler
 from .word_game.handler import WordGameAttackHandler
+from .fuzzer.handler import FuzzerAttackHandler

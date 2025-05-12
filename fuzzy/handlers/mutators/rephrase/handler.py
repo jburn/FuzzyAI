@@ -5,7 +5,7 @@ from fuzzy.handlers.mutators.base import BaseMutator, mutators_fm
 from fuzzy.handlers.mutators.enums import MutatorType
 from fuzzy.llm.providers.base import BaseLLMProvider
 
-PROMPT_TEMPLATE = "Rephrase the following text: {question}"
+PROMPT_TEMPLATE = "Rephrase the prompt following the next colon. If the prompt includes {{INSERT_PROMPT_HERE}}, leave it in its original place in the rephrased prompt. Reply with only the rephrased prompt and nothing else: {question}"
 
 logger = logging.getLogger(__name__)
 

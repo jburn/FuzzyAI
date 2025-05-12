@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 
 from fuzzy.handlers.classifiers.base import BaseClassifier, classifiers_fm
@@ -25,8 +26,10 @@ class HarmfulLLMClassifier(BaseClassifier):
         return bool(value == self._harmful)
     
     async def _classify(self, text: str, llm: BaseLLMProvider, **extra: Any) -> Any:
+        if text.lower().startswith("<think>"):
+            text = re.sub(r'^<think>.*?</think>\s*', '', text, flags=re.DOTALL)
         logger.debug(f"Classifier <{self._name}> classifying text: {text}")
-        if any(text.lower().startswith(x) for x in OBVIOUS_NOT_HARMFUL) and len(text.split('\n')) == 1:
+        if any(text.lower().startswith(x) for x in OBVIOUS_NOT_HARMFUL):
             logger.debug(f"Classifier {self._name} response: No, it is harmless")
             return self._not_harmful
         

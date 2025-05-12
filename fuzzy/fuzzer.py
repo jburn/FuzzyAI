@@ -192,11 +192,6 @@ class Fuzzer:
         """
         raw_results: list[AttackSummary] = []
         attack_handler: Optional[BaseAttackTechniqueHandlerProto] = None
-        if 'reps' in extra:
-            repetitions = int(extra['reps'])
-        else:
-            repetitions = 1
-
         logger.info('Starting fuzzer...')
         
         start_time = time.time()
@@ -208,21 +203,19 @@ class Fuzzer:
                 continue
 
             for attack_mode in attack_modes:
-                for rep in range(repetitions):
-                    logger.info(f'Attacking {len(prompts)} prompts with attack mode: {attack_mode} for model: {model}...')
-                    extra.update(**self._extra)
-                    attack_handler = self._attack_technique_factory(attack_mode, model=model, **extra)
+                logger.info(f'Attacking {len(prompts)} prompts with attack mode: {attack_mode} for model: {model}...')
+                extra.update(**self._extra)
+                attack_handler = self._attack_technique_factory(attack_mode, model=model, **extra)
 
-                    attack_result: Optional[AttackSummary] = await attack_handler.attack(prompts)
-                    if attack_result:
-                        attack_result.attack_mode = attack_mode
-                        attack_result.model = model
-                        attack_result.system_prompt = extra.get('system_prompt', 'No system prompt set')
-                        logger.info(f'Finished attacking {len(prompts)} prompts for attack mode {attack_mode}')
-                        raw_results.append(attack_result)
-                    else:
-                        logger.error(f'Failed to attack {len(prompts)} prompts for attack mode {attack_mode}')
-            
+                attack_result: Optional[AttackSummary] = await attack_handler.attack(prompts)
+                if attack_result:
+                    attack_result.attack_mode = attack_mode
+                    attack_result.model = model
+                    attack_result.system_prompt = extra.get('system_prompt', 'No system prompt set')
+                    logger.info(f'Finished attacking {len(prompts)} prompts for attack mode {attack_mode}')
+                    raw_results.append(attack_result)
+                else:
+                    logger.error(f'Failed to attack {len(prompts)} prompts for attack mode {attack_mode}')
         logger.info('Done, took %s seconds', time.time() - start_time)
         
         if attack_handler is not None and self._cleanup:

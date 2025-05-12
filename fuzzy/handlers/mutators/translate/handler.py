@@ -7,7 +7,7 @@ from fuzzy.llm.providers.base import BaseLLMProvider
 
 logger = logging.getLogger(__name__)
 
-PROMPT_TEMPLATE = "Translate the following prompt to {language} word for word. Do not add anything else to the reply. Only the pure translation:"
+PROMPT_TEMPLATE = "Translate the following prompt to {language} word for word. If the prompt includes {{INSERT_PROMPT_HERE}}, leave it in its original place in the translated prompt. Do not add anything else to the reply. Only the pure translation:"
 
 @mutators_fm.flavor(MutatorType.TRANSLATE)
 class TranslateMutator(BaseMutator):

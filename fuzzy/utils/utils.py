@@ -454,8 +454,8 @@ def generate_report(report: FuzzerResult) -> None:
                         "response": prompt.harmful_response
                     })
 
-            if len(row_data) > 1:
-                row_data = [sum(row_data) / len(row_data)]
+            #if len(row_data) > 1:
+                #row_data = [sum(row_data) / len(row_data)]
             heatmap_data.append(row_data)
 
         # Convert to format needed for Chart.js

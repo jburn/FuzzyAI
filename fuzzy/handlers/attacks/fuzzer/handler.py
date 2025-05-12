@@ -34,7 +34,7 @@ from fuzzy.handlers.mutators import (
     RepetitionMutator,
     SynonymMutator,
     ZeroSpaceCharacterMutator,
-    TranslateMutator
+    TranslateMutator,
 )
 from fuzzy.handlers.attacks.base import (
     BaseAttackTechniqueHandler,
@@ -47,41 +47,42 @@ from fuzzy.handlers.attacks.fuzzer.prompt_templates import (
 from fuzzy.handlers.attacks.enums import FuzzerAttackMode
 from fuzzy.handlers.attacks.models import AttackResultEntry
 from fuzzy.llm.providers.base import BaseLLMProvider
+from fuzzy.handlers.attacks.fuzzer.prompt_templates import ATTACKING_PROMPTS_TEMPLATES
 
 logger = logging.getLogger(__name__)
 
 MUTATOR_TYPES = [
-    RephraseMutator,
-    SummarizeMutator,
     PleaseMutator,
-    HomophoneMutator,
-    SynonymMutator,
-    EmojiMutator,
-    #TranslateDutchMutator,
-    #TranslateFrenchMutator,
-    #TranslateGermanMutator,
-    #TranslateItalianMutator,
-    #TranslatePortugeseMutator,
-    #TranslateSpanishMutator,
     RandropMutator,
     CaseShuffleMutator,
     CyrillicMutator,
     LeetspeakMutator,
-    LengthfatigueMutator,
     PunctuationspamMutator,
     RandaddCharacterMutator,
     RandropCharacterMutator,
     RepetitionMutator,
     ZeroSpaceCharacterMutator,
+    #LengthfatigueMutator,
+    #HomophoneMutator,
+    #SynonymMutator,
+    #EmojiMutator,
+    #RephraseMutator,
+    #SummarizeMutator,
     #MorseEncodeMutator,
     #Base64EncodeMutator,
     #BinaryEncodeMutator,
+    #TranslateDutchMutator,
+    #TranslateItalianMutator,
+    #TranslatePortugeseMutator,
+    #TranslateFrenchMutator,
+    #TranslateGermanMutator,
+    #TranslateSpanishMutator,
 ]
 
 DEFAULT_TRANSLATION_MODEL = "ollama/thinkverse/towerinstruct"
 
 class FuzzerAttackHandlerExtraParams(BaseModel):
-    reps: int = Field(1, description=f"Number of attempted attacks for each supplied prompt. Default: 1")
+    rng_seed: int = Field(None, description="Use a custom rng seed instead of a random one")
     mutation_model: str = Field(DEFAULT_OPEN_SOURCE_MODEL,
                                 description=f"Use a different model than the target model to mutate prompt (default: {DEFAULT_OPEN_SOURCE_MODEL})")
     translation_model: str = Field(DEFAULT_TRANSLATION_MODEL,
@@ -104,22 +105,28 @@ class FuzzerAttackHandler(BaseAttackTechniqueHandler[FuzzerAttackHandlerExtraPar
     async def _attack(self, prompt: str, **extra: Any) -> Optional[AttackResultEntry]:
         llm: BaseLLMProvider
         async with self._borrow(self._model) as llm:
-            random.seed(time.time_ns()) # pseudorandom seed
+            if self._extra_args.rng_seed:
+                random.seed(self._extra_args.rng_seed)
+            else:
+                random.seed(time.time_ns()) # pseudorandom seed
+            
             attack_prompt = prompt
-            chosen_mutators = random.choices(MUTATOR_TYPES, k=random.randint(2, 4))
-            logging.info(chosen_mutators)
+            chosen_mutators = random.sample(MUTATOR_TYPES, k=random.randint(2, 4))
+            
             for mutator_type in chosen_mutators:
                 if issubclass(mutator_type, TranslateMutator):
                     async with self._borrow(self._extra_args.translation_model) as translation_model:
-                        #logging.info("%s", translation_model)
+                        logging.debug("%s", translation_model)
                         mutator = mutator_type(translation_model)
                 elif 'llm' in inspect.signature(mutator_type).parameters:
                     async with self._borrow(self._extra_args.mutation_model) as mutation_model:
-                        #logging.info("%s", mutation_model)
+                        logging.debug("%s", mutation_model)
                         mutator = mutator_type(mutation_model)
                 else:
                     mutator = mutator_type()
+                logging.debug("Mutating using: %s", mutator.get_name())
                 attack_prompt = await mutator.mutate(prompt=attack_prompt)
+
             response = await llm.generate(attack_prompt, **self._extra)
             result = AttackResultEntry(original_prompt=prompt,
                                        current_prompt=attack_prompt,

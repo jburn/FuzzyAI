@@ -119,6 +119,8 @@ async def main() -> None:
     group.add_argument('-t', '--target-prompt', help='Prompt to attack (One or more)', action="append", type=str, default=[])
     group.add_argument('-T', '--target-prompts-file', help='Prompts to attack (from file, line separated)', type=str, default=None)
 
+    parser.add_argument('-r', '--repetitions', help='Number of times an attack is repeated for each prompt', type=int, default=1)
+
     parser.add_argument('-s', '--system-prompt', help=f'System prompt to use (default: {DEFAULT_SYSTEM_PROMPT}', type=str, default=DEFAULT_SYSTEM_PROMPT)
     parser.add_argument('-e', '--extra', help='Extra parameters (for providers/attack handlers) in form of key=value', action="append", 
                         type=str, default=[])
@@ -179,9 +181,9 @@ async def main() -> None:
     if hasattr(args, 'target_prompts_file') and args.target_prompts_file:
         with open(args.target_prompts_file, 'r') as f:
             prompts = f.readlines()
-        prompts = [prompt.strip() for prompt in prompts if prompt.strip()]
+        prompts = [prompt.strip() for prompt in prompts if prompt.strip() for _ in range(args.repetitions)]
     else:
-        prompts = args.target_prompt
+        prompts = [args.target_prompt] * args.repetitions
 
     if hasattr(args, 'benign_prompts') and args.benign_prompts:
         logger.info(f"Adding {args.benign_prompts} benign prompts to the attack")

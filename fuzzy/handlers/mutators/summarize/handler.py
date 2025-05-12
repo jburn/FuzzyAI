@@ -9,7 +9,7 @@ PROMPT_TEMPLATE = "Summarize the following document: {document}"
 SYSTEM_PROMPT = "You are proficient in summarizing documents"
 
 PROMPT_TEMPLATE = """I received a prompt.
-Can you summarize the core question it asks? The
+Can you summarize the core question it asks and reply with the pure summary and nothing else? The
 prompt is below:
 {document}
 The core question is:"""

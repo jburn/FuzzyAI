@@ -14,7 +14,7 @@ The FuzzyAI Fuzzer is a powerful tool for automated LLM fuzzing. It is designed 
    git clone git@github.com:cyberark/FuzzyAI.git
    ```
 
-2. Install dependencies using [Poetry](https://python-poetry.org/) or [PIP](https://pypi.org/project/pip/) and Python venv [Python venv](https://docs.python.org/3/library/venv.html):
+2. Install dependencies using [Poetry](https://python-poetry.org/) or [PIP](https://pypi.org/project/pip/) and [Python venv](https://docs.python.org/3/library/venv.html):
    ```bash
    poetry install
    poetry shell  # Activate virtual environment

@@ -1,8 +1,7 @@
 # FuzzyAI Fuzzer
 <div style="text-align: center;">
-<img src="resources/logo.png" alt="Project Logo" width="200" style="vertical-align:middle; margin-right:10px;" />
-</div>
-<br><br>
+
+**This repository is an archive of a modified version of FuzzyAI implemented for a diploma thesis** 
 
 The FuzzyAI Fuzzer is a powerful tool for automated LLM fuzzing. It is designed to help developers and security researchers identify jailbreaks and mitigate potential security vulnerabilities in their LLM APIs. 
 
@@ -15,10 +14,16 @@ The FuzzyAI Fuzzer is a powerful tool for automated LLM fuzzing. It is designed 
    git clone git@github.com:cyberark/FuzzyAI.git
    ```
 
-2. Install dependencies using [Poetry](https://python-poetry.org/):
+2. Install dependencies using [Poetry](https://python-poetry.org/) or [PIP](https://pypi.org/project/pip/) and Python venv [Python venv](https://docs.python.org/3/library/venv.html):
    ```bash
    poetry install
    poetry shell  # Activate virtual environment
+   ```
+  or
+  ```
+   python -m venv venv
+   ./venv/Scripts/activate
+   pip install -r ./requirements.txt
    ```
 
 3. Run the fuzzer:
